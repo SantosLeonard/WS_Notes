@@ -1,0 +1,49 @@
+webvpn
+ port 443
+ enable outside
+ tunnel-group-list enable
+ anyconnect image disk0:/anyconnect.pkg
+ anyconnect enable
+
+access-list SPLIT standard permit 192.168.10.0 255.255.255.0
+access-list SPLIT standard permit 172.16.0.0 255.255.255.252
+
+group-policy GROUP internal
+group-policy GROUP attributes
+ vpn-tunnel-protocol ssl-client
+ split-tunnel-policy tunnelspecified
+ split-tunnel-network-list value SPLIT
+ webvpn
+  anyconnect ssl dtls enable
+  anyconnect keep-installer installed
+  anyconnect ssl compression deflate
+
+ip local pool POOL 192.168.0.10-192.168.0.100 mask 255.255.255.0
+
+tunnel-group TUNNEL type remote-access
+tunnel-group TUNNEL general-attributes
+ default-group-policy GROUP
+ address-pool POOL
+ username-from-certificate OU
+
+tunnel-group TUNNEL webvpn-attributes
+ group-alias GROUP enable
+ authentication certificate aaa
+ pre-fill-username ssl-client hide
+
+username USER1 password CISCO
+username USER1 attributes
+ group-lock value TUNNEL
+
+crypto ca server
+no shutdown
+
+crypto ca server user-db add vpn dn CN=vpn.senai.br,OU=SC1
+crypto ca server user-db allow user vpn
+tunnel-group-map enable rules
+crypto ca certificate map MAP 1
+ subject-name attr ou eq SC1
+username SC1 password CISCO
+
+webvpn
+ certificate-group-map MAP 1 TUNNEL

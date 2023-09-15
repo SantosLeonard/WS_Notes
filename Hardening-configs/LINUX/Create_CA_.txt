@@ -1,0 +1,16 @@
+//> Gerar certificado e chave da CA com script CA
+
+cd /etc/pki/tls/misc
+./CA.pl –newca
+Os arquivos ficam dentro de /etc/pki/CA
+
+//> Gerar requisição de certificado
+
+./CA –newreq # Certificado com senha.
+./CA –newreq-nodes # Certificado sem senha.
+
+//>Assinar certificado
+
+./CA –sign
+Há 3 arquivos no diretório: newcert.pem, newkey.pem e newreq.pem, sendo esse último descartável. #Pode ser que o newkey.pem fique junto com o newreq.pem. Remova o req da privatekey.
+

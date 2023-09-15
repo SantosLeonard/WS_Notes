@@ -1,0 +1,10 @@
+1. remove user unused (competitor)
+2. remove access-list unused (ROUTES)
+3. remove object network unused (internal)
+4. remove ikev1 and ipsec unused configs
+5. remove group-policies unused configs
+6. adjust the security level of interfaces
+	- branch g0/0 - from 100 to 50
+	- dmz g0/2 - from 100 to 50
+	- outside g0/3 - from 100 to 0
+7. disable webvpn to zone unused (branch)

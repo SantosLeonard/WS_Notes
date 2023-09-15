@@ -1,0 +1,35 @@
+
+# dependencies:
+
+daq-2.0.6-1.el7.x86_64.rpm
+libnghttp2-1.31.1-1.el7.x86_64.rpm
+
+# package
+
+snort-2.9.13-1.centos7.x86_64.rpm
+
+
+# config:
+
+access /etc/snort/snort.conf
+
+:%s/^include/#include
+comment: 253
+comment: 507-512
+add: include $RULE_PATH/custom.rules
+
+# rules:
+
+create file /etc/snort/rules/custom.rules
+
+alert tcp $EXTERNAL_NET any -> $HOME_NET 21 (msg: "FTP traffic from external network detected"; flags:S; sid:10000;)
+alert icmp $EXTERNAL_NET any -> $HOME_NET any (msg: "ICMP echo-request from external network detected"; itype: 8; icode: 0; sid: 10001;)
+alert ip $HOME_NET any -> $EXTERNAL_NET any (msg: "Malware from DMZ network detected"; content: "malware"; nocase; sid:10002;)
+
+# start service:
+
+snort -d -l /var/log/snort -c /etc/snort/snort.conf -i ens33
+
+# add to rc.local
+
+

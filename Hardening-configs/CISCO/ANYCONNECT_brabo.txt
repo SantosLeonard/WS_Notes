@@ -1,0 +1,89 @@
+-----------------
+# Objects
+object-group network ANYCONNECT
+	network-object 192.168.10.0 255.255.255.0
+
+object-group network OBJ-NETADMIN-ACCESS
+	network-object object INSIDE
+	network-object object DMZ
+	network-object object BO
+
+object-group network OBJ-BONETADMIN-ACCESS
+	network-object object BO
+
+object-group network OBJ-DEVELOPER-ACCESS
+	network-object host 172.16.2.10
+------------------
+
+------------------
+http redirect outside 
+------------------
+
+------------------
+# Group NetAdmin
+access-list ANY-NETADMIN-ACCESS extended permit ip object-group NETADMIN object-group ANYCONNECT
+
+# Group BONetAdmin
+access-list ANY-BONETADMIN-ACCESS extended permit ip object-group BONETADMIN object-group ANYCONNECT
+
+# Group Developer
+access-list ANY-DEVELOPER-ACCESS extended permit ip object-group DEVELOPER object-group ANYCONNECT
+------------------
+
+
+------------------
+aaa-server RADIUS-SSH protocol radius
+aaa-server RADIUS-SSH (dmz) host 192.168.2.10
+ key Sh@ngha!2021
+ authentication-port 1812
+ accounting-port 1813
+ no mschapv2-capable
+------------------
+
+
+------------------
+# Tunnel Group
+tunnel-group ANYCONNECT general-attributes
+	authentication-server-group RADIUS
+	address-pool ANYCONNECT
+	password-management
+
+tunnel-group ANYCONNECT ppp-attributes
+	authentication ms-chap-v2
+
+-------------------
+
+-------------------
+# Group Policy
+group-policy NETADMIN internal
+group-policy NETADMIN attributes
+	dns-server value 192.168.2.10
+	vpn-tunnel-protocol ssl-client
+	split-tunnel-policy tunnelspecified
+	split-tunnel-network-list value ANY-NETADMIN-ACCESS
+	default-domain value ecorp.local
+
+group-policy BONETADMIN internal
+group-policy BONETADMIN attributes
+	dns-server value 192.168.2.10
+	vpn-tunnel-protocol ssl-client
+	split-tunnel-policy tunnelspecified
+	split-tunnel-network-list value ANY-BONETADMIN-ACCESS
+	default-domain value ecorp.local
+
+group-policy DEVELOPER internal
+group-policy DEVELOPER attributes
+	dns-server value 192.168.2.10
+	vpn-tunnel-protocol ssl-client
+	split-tunnel-policy tunnelspecified
+	split-tunnel-network-list value ANY-DEVELOPER-ACCESS
+	default-domain value ecorp.local
+
+group-policy DOMAINUSERS internal
+group-policy DOMAINUSERS attributes
+	dns-server value 192.168.2.10
+	vpn-tunnel-protocol ssl-client
+	split-tunnel-policy tunnelspecified
+	split-tunnel-network-list value ANY-DOMAINUSERS-ACCESS
+	default-domain value ecorp.local
+-------------------

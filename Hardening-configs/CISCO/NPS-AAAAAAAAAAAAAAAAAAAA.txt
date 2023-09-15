@@ -1,0 +1,11 @@
+ANYCONNECT
+- conditions
+	authentication-type = ms-chap v2
+
+
+SSH
+- conditions
+	authentication-type = PAP
+- constraints
+	Unencrypted authentication (PAP, SPAP)
+

@@ -1,0 +1,49 @@
+1. Create FTP Virtual users home directory
+mkdir -p /files/users/skill54-ftp
+
+
+2. Create group/user and set ownership of home folder to them.
+groupadd ftpgroup
+adduser -s /bin/bash -M -d /files/ -g ftpgroup -G ftp ftpuser
+chown ftpuser:ftpgroup -R /files/
+
+3. Configure SELinux so it does not fuck you up
+chcon -R -t public_content_rw_t files/
+setsebool ftpd_anon_write=on
+
+4. Configure vsftpd.conf 
+
+virtual_use_local_privs=YES
+guest_enable=YES
+user_sub_token=$USER
+local_root=/files/users/$USER
+guest_username=ftpuser
+chroot_local_user=YES
+allow_writeable_chroot=YES
+
+ssl_enable=YES
+rsa_cert_file=/etc/vsftpd/wsc2019.cert
+rsa_private_key_file=/etc/vsftpd/wsc2019.key
+
+pasv_enable=YES
+pasv_min_port=30000
+pasv_max_port=30999
+
+cmds_denied=RNTO,RNFO
+
+5. Create users file
+vi users
+user
+password
+
+6. Create the database
+db_load -T -t hash -f users vsftpd.db 
+
+5. Edit /etc/pam.d/vsftpd to use virtual users, pointing to the new database created
+
+account	required	pam_userdb.so db=/etc/vsftpd/vsftpd
+auth	required	pam_userdb.so db=/etc/vsftpd/vsftpd
+session	required	pam_loginuid.so
+
+
+

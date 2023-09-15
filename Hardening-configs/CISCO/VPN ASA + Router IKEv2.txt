@@ -1,0 +1,80 @@
+ASA
+
+object network OUTSIDE
+ subnet 10.100.2.0 255.255.255.252
+
+object network INSIDE
+ subnet 10.100.1.0 255.255.255.252
+
+#PRESTAR ATENÇÃO NO DESTINATION
+access-list ACL-VPN extended permit ip object INSIDE object OUTSIDE
+
+###DESTINO É O MESMO DA ACL DA VPN
+nat (inside,any) source static REDES REDES destination static OUTSIDE OUTSIDE no-proxy-arp route-lookup
+
+route outside 0.0.0.0 0.0.0.0 1.1.1.2 1
+
+crypto ipsec ikev2 ipsec-proposal PROP
+ protocol esp encryption aes-256
+ protocol esp integrity sha-1
+
+crypto ikev2 policy 1000
+ encryption aes-256
+ integrity sha512
+ group 5
+
+crypto ikev2 enable outside
+
+crypto map VPN 1 match address ACL-VPN
+crypto map VPN 1 set peer 1.1.1.2 
+crypto map VPN 1 set ikev2 ipsec-proposaL PROP
+crypto map VPN interface outside
+	
+group-policy 1.1.1.2 internal
+tunnel-group 1.1.1.2 type ipsec-l2l
+tunnel-group 1.1.1.2 general-attributes
+ default-group-policy 1.1.1.2
+
+tunnel-group 1.1.1.2 ipsec-attributes
+ ikev2 remote-authentication pre-shared-key keyb-a
+ ikev2 local-authentication pre-shared-key keya-b
+
+
+
+
+
+ROUTER
+
+crypto ikev2 proposal IKEv2_PROPOSAL
+ encryption aes-cbc-256
+ integrity sha512
+ group 5
+
+crypto ikev2 policy IKEv2_POLICY
+ proposal IKEv2_PROPOSAL
+
+crypto ikev2 keyring IKEv2_KEYRING
+ peer ASA-A
+ address 1.1.1.1
+ pre-shared-key local keyb-a
+ pre-shared-key remote keya-b
+
+crypto ikev2 profile IKEv2_PROFILE
+ match identity remote address 1.1.1.1 255.255.255.255
+ identity local address 1.1.1.2
+ authentication remote pre-share
+ authentication local pre-share
+ keyring local IKEv2_KEYRING
+
+crypto ipsec transform-set IPSEC_TSET1 esp-aes 256 esp-sha-hmac
+ mode tunnel
+
+crypto map IKEv2_MAP 1000 ipsec-isakmp
+ set peer 1.1.1.1
+ set transform-set IPSEC_TSET1
+ set ikev2-profile IKEv2_PROFILE
+ match address COMPANY_B_A_CRYPTO
+
+interface gigabitEthernet0/0
+ crypto map IKEv2_MAP
+ip access-list extended COMPANY_B_A_CRYPTO permit ip 10.100.2.0 0.0.0.3 10.100.1.0 0.0.0.3

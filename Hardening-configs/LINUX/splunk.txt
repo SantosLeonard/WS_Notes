@@ -1,0 +1,24 @@
+/opt/
+
+./splunk start
+./splunk enable listen 9997
+
+
+- WINDOWS SIDE
+instalar as paradas no estilo next and next
+
+
+Splunk Forwarder commands:
+1. Forwarder connection to Index Server:
+/opt/splunkforwarder/bin/splunk add forward-server hostname.domain:9997
+
+2. Add Data:
+/opt/splunkforwarder/bin/splunk add monitor /path/to/app/logs/ -index main -sourcetype %app%
+
+Where /path/to/app/logs/ is the path to application logs on the host that you want to bring 
+into Splunk, and %app% is the name you want to associate with that type of dat
+
+
+
+ON WEB
+check the logs

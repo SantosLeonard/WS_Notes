@@ -1,0 +1,47 @@
+ROUTER
+
+crypto isakmp policy 300
+encryption 3des
+authentication pre-share
+hash md5
+group 5
+!
+crypto isakmp key CISCO address 136.1.38.8 255.255.255.255
+crypto ipsec transform-set 3DES_MD5 esp-3des esp-md5-hmac
+!
+ip access-list extended LOR3_LOSW1
+permit ip host 150.1.3.3 host 150.1.7.7
+!
+crypto map VPN 20 ipsec-isakmp
+match address LOR3_LOSW1
+set transform 3DES_MD5
+set peer 136.1.38.8
+!
+interface FastEthernet0/0
+crypto map VPN
+
+
+
+ASA
+
+crypto ikev1 policy 300
+ authentication pre-share
+ encryption 3des
+ hash md5
+ group 5
+!
+crypto ikev1 enable BRANCH
+!
+tunnel-group 191.1.1.1 type ipsec-l2l
+tunnel-group 191.1.1.1 ipsec-attributes
+ ikev1 pre-shared-key tocomfome
+!
+crypto ipsec ikev1 transform-set 3DES_MD5 esp-3des esp-md5-hmac
+!
+access-list LOSW1_LOR3 permit ip host 150.1.7.7 host 150.1.3.3
+!
+crypto map VPN 10 match address LOSW1_LOR3
+crypto map VPN 10 set peer 136.1.38.3
+crypto map VPN 10 set ikev1 transform-set 3DES_MD5
+!
+crypto map VPN interface BRANCH

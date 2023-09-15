@@ -1,0 +1,14 @@
+yum install mod_security mod_security_crs
+
+#/etc/httpd/conf.d/mod_security.conf
+- SecRuleEngine On
+
+
+#/etc/httpd/conf/httpd.conf
+- SecStatusEngine On
+
+curl to test ?exec=/bin/bash	#testing WAF
+
+tail /var/log/httpd/modsec_audit.log	#checkLogs
+
+http://domain.tld/test/php/test.php?foo=http://www.example.com

@@ -1,0 +1,5 @@
+firewall-cmd --new-zone=<name> --permanent
+firewall-cmd --zone=<name> --permanent --add-port=<port> --add-source=<ip_address>
+firewall-cmd --reload
+firewall-cmd --list-all --zone=<name>
+firewall-cmd --get-zones

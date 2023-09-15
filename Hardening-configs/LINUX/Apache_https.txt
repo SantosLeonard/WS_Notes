@@ -1,0 +1,21 @@
+yum install mod_ssl --> modulo de segurança httpd
+
+cd /etc/httpd/conf.d/ssl.conf
+
+DocumentRoot #Descomentar
+ServerName #Nome do server. ex: www.site.com.br:443
+
+SSLCertificateFile /etc/pki/tls/::q
+misc/newcert.pem #Caminho do certificado
+SSLCertificateKey /etc/pki/tls/misc/newreq.pem   #Caminho da private key
+
+cd /etc/httpd/conf/httpd.conf
+
+ServerName #Nome do server. ex: www.site.com.br:80
+
+--> Em baixo de ServerName, adicione:
+
+Redirect / https://www.site.com.br/
+
+
+openssl rsa -in newkey.org -out private.key

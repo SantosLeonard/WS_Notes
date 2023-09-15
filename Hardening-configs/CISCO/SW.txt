@@ -1,0 +1,73 @@
+NO IP ROUTING
+
+- Habilitando envio de logs
+-- logging on
+-- logging <host>
+-- logging trap <level> <--default level is informational-->
+-- logging origin-id [hostname,ipv4]
+
+- DHCP SNOOPINGp
+-- ip dhcp snooping
+-- ip dhcp snooping vlan 100
+-- interface FastEthernet 0/0
+-- ip dhcp snooping trust
+-- show ip dhcp snooping
+-- show ip dhcp snooping binding
+
+
+- DAI
+-- ip arp inspection vlan 1
+-- interface Ethernet 0/0
+-- ip arp inspection trust
+-- show ip arp inspection vlan 1
+-- show ip arp inspection interface e0/0
+
+
+-- AAA
+- radius server CENTOS_SERVER	>	set info's server
+- aaa group server radius SHH_GROUP	> set server
+- aaa authentication login SSH_PROFILE group SSH_GROUP local
+- line vty | con	>	login authentication SSH_GROUP
+
+
+-- DEBUGS
+- terminal monitor
+- debug aaa authentication
+- logging monitor 7
+- logging console 7
+- debug radius authentication
+
+
+--ETHERCHANNEL
+- interface vlan 1
+-- ip address 192.168.0.1 255.255.255.0
+
+- interface fastEthernet 0/23
+-- channel-group 1 mode active
+-- no shutdown
+
+- interface fastEthernet 0/24
+-- channel-group 1 mode active
+-- no shutdown
+
+- interface port-channel 1
+-- sw trunk enc dot1q
+-- switchport mode trunk
+
+
+- PORT MIRROR
+-- monitor session 1 source interface ethernet 0/1
+-- monitor session 1 destination interface ethernet 0/5
+
+- IP SOURCE GUARD
+-- int e0/0
+-- ip verify source
+
+- DOT1X BASE BASE ON AAA AUTHENTICATION
+-- dot1x system-auth-control
+-- aaa authentication dot1x DOT1X group radius
+-- interface e0/3	
+--- switchport mode access
+--- authentication port-control auto
+--- dot1x pae authenticator
+-- sh dot1x //to check

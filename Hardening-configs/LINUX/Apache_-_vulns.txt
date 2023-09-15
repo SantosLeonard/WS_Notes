@@ -1,0 +1,87 @@
+	1. Disable Trace HTTP Request;
+
+TraceEnable off
+	
+	2. Run apache with separate user and group;
+
+# useradd -d /var/www/ -g www-data -s /bin/nologin http-web
+
+#vim /etc/apache2/envvars
+
+export APACHE_RUN_USER=http
+	
+	3. Disable signature and banner;
+
+# vim /etc/httpd/conf/httpd.conf (RHEL/CentOS/Fedora)
+# vim /etc/apache2/apache2.conf (Debian/Ubuntu)
+
+ServerSignature Off
+ServerTokens Prod
+
+	4. Use only TLS;
+
+# vim /etc/apache2/mods-enabled/ssl.conf
+
+SSLProtocol TLSv1.2
+
+	5. Disable directory reading/listing;
+
+# vim /etc/apache2/apache2.conf
+
+<Directory /var/www/html>
+    Options -Indexes
+</Directory>
+
+	6. Prevent information leak through Etag restriction;
+
+# vim /etc/apache2/apache2.conf
+
+FileETag None
+
+	7. Directory permissions only to root and www-data;
+
+# chown -R root:www-data /var/www/html
+
+	8. HTTP Request methods;
+
+# vim /etc/apache2/apache2.conf
+
+search for Directory:
+<LimitExcept GET POST HEAD>
+deny from all
+</LimitExcept>
+
+	9. Prevent cookie attacks;
+
+Ensure mod_headers.so is enabled
+Add the following directive and save the apache2.conf
+
+header edit Set-Cookie ^(.*)$ $1;HttpOnly;Secure
+
+	10. Prevent clickjacking attacks;
+
+# vim /etc/apache2/conf-enabled/security.conf
+
+Header always append X-Frame-Options SAMEORIGIN
+	
+	11. Block XSS in hosted web pages;
+
+Ensure mod_headers.so is enabled
+Add the following directive and save the apache2.conf
+
+Header set X-XSS-Protection "1; mode=block"
+
+	12. Disable HTTP 1.0;
+
+Ensure to load mod_rewrite module
+Enable in your virtualhosts file:
+
+RewriteEngine On
+RewriteCond %{THE_REQUEST} !HTTP/1.1$
+RewriteRule .* - [F]
+
+	13. Change session timeout to 60;
+
+Add the following in apache2.conf
+
+Timeout 60

@@ -1,0 +1,53 @@
+#RANGE PARA DISTRIBUIÇÃO PARA OS CLIENTES
+- ip local pool ANYCONNECT 192.168.10.100-192.168.10.200 mask 255.255.255.0 
+
+- object-group network ANYCONNECT
+-- network-object 20.0.0.0 255.255.255.0 
+
+- webvpn
+-- enable outside
+-- tunnel-group-list enable
+-- anyconnect image disk0:/anyconnect.pkg 1
+-- anyconnect enable
+
+- http redirect outside 
+
+#DESTINATION HOST
+- access-list ROUTE standard permit 172.16.2.0 255.255.255.0
+- access-list ROUTE standard permit 192.168.2.0 255.255.255.0
+
+
+#ACL PERMISSIVA
+- access-list ANYCONNECT extended permit tcp any host 172.16.2.11
+- access-list ANYCONNECT extended permit tcp any 192.168.0.0 255.255.0.0
+- access-list ANYCONNECT extended permit tcp any 172.16.0.0 255.255.0.0
+- access-list ANYCONNECT extended permit ip any 172.16.0.0 255.255.0.0
+- access-list ANYCONNECT extended permit ip any 192.168.0.0 255.255.0.0
+
+
+-------------------------------------------------------------------------
+- group-policy ANYCONNECT internal
+- group-policy ANYCONNECT attributes
+-- dns-server value 192.168.2.10
+-- vpn-filter value ANYCONNECT
+-- vpn-tunnel-protocol ssl-client
+-- split-tunnel-policy tunnelspecified
+-- split-tunnel-network-list value ROUTE
+-- default-domain value ecorp.local
+
+- tunnel-group ANYCONNECT type remote-access
+- tunnel-group ANYCONNECT general-attributes
+-- address-pool ANYCONNECT
+-- authentication-server-group RADIUS
+-- default-group-policy ANYCONNECT
+- tunnel-group ANYCONNECT webvpn-attributes
+-- group-alias ANYCONNECT enable
+
+---------------------------------------------------------------------------
+#ACL TO ALLOW TRAFFIC THROUGH THE VPN S2S
+- access-list VPN extended permit ip object-group ANYCONNECT object BO
+
+#ALLOW TRAFFIC FROM OUTSIDE TO BRANCH
+- access-list OUTSIDE extended permit ip object-group ANYCONNECT object PG2
+- access-list OUTSIDE extended permit ip object-group ANYCONNECT object DMZ
+- access-list OUTSIDE extended permit ip any host 192.168.2.10

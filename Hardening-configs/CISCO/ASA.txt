@@ -1,0 +1,128 @@
+same-security-traffic permit inter-interface
+same-security-traffic permit intra-interface
+
+object network REDE1
+ subnet 192.168.0.0 255.255.255.0
+
+object network REDE-REMOTA
+ subnet 10.0.0.0 255.0.0.0
+
+object network REDES
+ network-object 192.168.0.0 255.255.0.0
+ network-object 172.16.0.0 255.255.0.0
+
+object network NAT_GERAL
+ subnet 0.0.0.0 0.0.0.0
+ nat (inside,outside) dynamic interface
+
+access-list OUT_cryptomap extended permit ip object-GROUP REDES object REDE-REMOTA log
+
+icmp permit any OUTSIDE
+icmp permit any OUTSIDE
+
+###DESTINO É O MESMO DA ACL DA VPN
+nat (inside,any) source static REDES REDES destination static REDE-REMOTA REDE-REMOTA no-proxy-arp route-lookup
+
+route OUTSIDE 0.0.0.0 0.0.0.0 1.1.1.1 10
+route INSIDE 192.168.0.0 255.255.255.0 172.16.0.1 1
+
+
+
+
+aaa-server RADIUS-SSH protocol radius
+aaa-server RADIUS-SSH (dmz) host 192.168.2.10
+ key teste123
+ authentication-port 1812
+ accounting-port 1813
+ no mschapv2-capable
+
+aaa authentication http console RADIUS-LAB LOCAL
+aaa authentication enable console RADIUS-LAB LOCAL
+aaa authentication ssh console RADIUS-LAB LOCAL
+
+http 192.168.0.0 255.255.0.0 inside
+
+snmp-server host inside 192.168.0.10 community worldskills version 2c
+
+
+
+- Habilitar envio de logs
+-- logging enable
+-- logging timestamp
+-- logging trap informational
+-- logging devide-id
+-- logging host <interface> <host>
+-- logging facility <number>
+	16 = Local0 on rsyslog
+	17 = Local1 on rsyslog
+	18 = Local2 on rsyslog
+	19 = Local3 on rsyslog
+	20 = Local4 on rsyslog
+	21 = Local5 on rsyslog
+	22 = Local6 on rsyslog
+	23 = Local7 on rsyslog
+
+
+- Password Policy
+-- password-policy lifetime
+-- password-policy minimum-changes
+-- password-policy minimum-uppercase
+-- password-policy minimum-lowercase
+-- password-policy minimum-numeric
+
+
+- Habilitar SSH
+-- aaa authentication ssh console LOCAL
+-- ssh 192.168.1.0 255.255.255.0 trust
+
+
+- NTP CLIENT
+-- ntp authenticate
+-- ntp authentication-key 1 md5 NtpShanghai54
+-- ntp trusted-key
+-- ntp server 209.165.200.2 key 1
+
+
+- object network WEB_SERVER
+-- host 192.168.1.1
+-- nat (DMZ,OUTSIDE) static 33.33.33.33
+
+-  nat (DMZ,outside) source static WEB-SERVER WEB-SERVER_PUBLIC service TCP22 TCP22
+-  nat (inside,outside) source static WEB-SERVER interface
+
+
+- DNS NAT
+- object network DNS
+-- host 172.16.2.11
+-- nat (branch,outside) source static service udp domain domain
+
+object network DNS
+host 172.16.2.11
+nat (branch,outside) source static service udp domain domain
+
+
+- DHCPD
+-- dhcpd dns 192.168.12.10 192.168.6.11
+-- dhcpd address 192.168.18.100-192.168.18.200 inside-HR
+-- dhcpd option 3 ip 192.168.18.1 interface inside-HR
+-- dhcpd enable inside-HR
+
+- DHCPRELAY
+-- dhcprelay server x.x.x.x outside
+-- dhcprelay enable inside
+-- dhcprelay setroute inside
+
+
+- access-list DMZ extended permit ip object DMZ object INSIDE
+- access-group DMZ in interface DMZ
+
+
+- SYN-FLOOD PROTECTION
+-- access-list SYN-FLOOD permit tcp any any
+
+-- class-map CLASS-SYN-FLOOD
+--- match access-list SYN-FLOOD
+
+-- policy-map global_policy
+--- class CLASS-SYN-FLOOD
+--- set connection embryonic-conn-max 5

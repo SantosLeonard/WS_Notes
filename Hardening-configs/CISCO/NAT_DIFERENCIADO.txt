@@ -1,0 +1,3 @@
+caso tenha um NAT que prejudique o router, por exemplo, para utilizar serviços dá de fazer um nat destination.
+com o NAT destination dá de direcionar para um serviço específico.
+dá de fazer o NAT no object network, ou fazer normal utilizando os objects.

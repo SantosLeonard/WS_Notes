@@ -1,0 +1,36 @@
+------------------------------------------------------------------------------
+Se o usuário esquecer sua sessão aberta após o uso do
+equipamento, alguém mal intencionado poderá realizar qualquer
+atividade no equipamento.
+
+TIMEOUT - configurar tempo limite de ociosidade do terminal para
+que a sessão se encerre automaticamente.
+config# line con 0
+config-line# exec-timeout 5
+------------------------------------------------------------------------------
+BRUTE FORCE - o atacante pode realizar diversas tentativas através de ferramentas automatizadas até que a senha correta corresponda ao login.
+
+LIMITE DE TENTATIVAS DE LOGIN - ssh authentication-retries limita a quantidade de tentativas de login, evitando ataques de brute force.
+config# ip ssh authentication-retries 3
+------------------------------------------------------------------------------
+Senhas salvas em texto claro, facilitando o acesso de pessoas
+não autorizadas.
+
+ENCRYPTION - encriptar todas as senhas, para que sejam
+apresentadas em forma criptografada, impossibilitando sua leitura.
+config# service password-encryption
+------------------------------------------------------------------------------
+INFORMATION GATHERING - se porventura o atacante já esteja infiltrado na rede, informações sobre o router podem ser adquiridas.
+
+DESABILITAR CDP - impede que informações vitais sobre o router sejam adquiridas.
+config# no cdp run
+------------------------------------------------------------------------------
+Se o roteador reconhecer um roteador malicioso como
+melhor rota para roteamento, o atacante poderá ter controle
+sobre o tráfego da rede.
+
+NO IP REDIRECT - não permite redirecionamento dos pacotes,
+mesmo que para melhor rota
+config# interface <interface_number>
+config-if# no ip redirect
+------------------------------------------------------------------------------

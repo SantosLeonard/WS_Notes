@@ -1,0 +1,10 @@
+https_port 443 accel defaultsite=www.wsc2019.cloud cert=/etc/vsftpd/wsc2019.cert key=/etc/vsftpd/wsc2019.key
+cache_peer 192.168.2.129 parent 443 0 no-query originserver ssl sslflags=DONT_VERIFY_PEER login=PASS ##192.168.2.129 is the remote server
+visible_hostname www.wsc2019.cloud
+
+
+#HTTP
+#http_port 80 accel defaultsite=www.wsc2019.cloud
+#cache_peer 192.168.2.129 parent 80 0 no-query originserver login=PASS
+
+http_access allow all

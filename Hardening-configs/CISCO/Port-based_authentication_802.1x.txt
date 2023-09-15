@@ -1,0 +1,34 @@
+Switch:
+- Configurar RADIUS
+-- Switch(config)#radius-server host IP auth-port 1812 acct-port 1813 key KEY
+- Configurar Dot1x
+-- Switch# configure terminal
+-- Switch(config)# dot1x system-auth-control
+-- Switch(config)# aaa new-model
+-- Switch(config)# aaa authentication dot1x default group radius
+-- Switch(config)# interface f0/1
+-- Switch(config-if)# switchport mode access
+-- Switch(config-if)# dot1x pae authenticator
+-- Switch(config-if)# dot1x port-control auto  // authentication port-control auto
+
+No Windows 10:
+- Subir serviço de Wired Autoconfig (Configuração automática com fio).
+- Na placa de rede, configurações de EAP protegido > não validar identidade do servidor.
+- Configurações de EAP protegido > configurar método de autenticação > desmarcar credenciais automáticas.
+- De volta nas propriedades do adaptador Ethernet > configurações avançadas > especificar método de autenticação (usuário).
+
+No Windows Server:
+- Instalar AD CS e configurar.
+- NPS:
+-- Client:
+--- Configurar o switch.
+-- Policies - Network:
+--- Overview:
+---- Grant access.
+--- Condition:
+---- Client IPv4 e user group.
+--- Constraints:
+---- Authentication method: PEAP.
+---- NAS port type: 802.1x Ethernet.
+--- Settings:
+---- Standard: PPP e Framed.

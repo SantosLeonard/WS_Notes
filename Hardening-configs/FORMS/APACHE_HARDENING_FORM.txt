@@ -1,0 +1,40 @@
+----------------------------------------------------------------------------------------
+Listagem de diretório - permite ao atacante visualizar os
+diretórios e arquivos da aplicação e/ou sistema operacional
+
+Desabilita a listagem de diretórios
+#Localizar "Indexes" no arquivo /etc/httpd/conf/httpd.conf e adicione o
+caracter "-" (hifen) como prefixo.
+-Indexes
+----------------------------------------------------------------------------------------
+Má configuração de links simbólicos - permite ao atacante
+acessar diretórios e/ou arquivos sensíveis através de
+links simbolicos
+Desabilita os links simbólicos que podem estar ativos na aplicação.
+#Localizar "FollowSymLinks" no arquivo /etc/httpd/conf/httpd.conf e
+adicionar o caracter "-" como prefixo
+-FollowSymLinks
+----------------------------------------------------------------------------------------
+Rastreio de requisições - permite ao atacante rastrear as 
+requisições que são realizadas ao serviço.
+
+Desabilita o rastreio das requisições
+#adicionar ao final do arquivo /etc/httpd/config/httpd.conf 
+TraceEnable Off
+----------------------------------------------------------------------------------------
+Vazamento de Informações - permite ao atacante adquirir
+informações através do fileEtag
+
+Desabilita a amostragem desta informação nos headers.
+#adicionar ao final do arquivo /etc/httpd/config/httpd.conf 
+FileEtag None
+----------------------------------------------------------------------------------------
+Vazamento de Informações - permite ao atacante obter 
+informações sobre a aplicação e o sistema operacional.
+
+Desabilita a amostragem destas informações, em mensagens de erro
+ou nos headers.
+#adicionar ao final do arquivo /etc/httpd/config/httpd.conf 
+ServerTokens Prod
+ServerSignature Off
+----------------------------------------------------------------------------------------

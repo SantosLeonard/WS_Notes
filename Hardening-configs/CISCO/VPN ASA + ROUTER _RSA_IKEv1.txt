@@ -1,0 +1,47 @@
+wqsec1(config)# crypto key generate rsa label private.key modulus 1024
+
+wqsec1(config)# crypto ca trustpoint CA
+wqsec1(config-ca-trustpoint)# enrollment terminal 
+wqsec1(config-ca-trustpoint)# fqdn wqsec1.pesquisa.local
+wqsec1(config-ca-trustpoint)# subject-name CN=wqsec1.pesquisa.local
+wqsec1(config-ca-trustpoint)# keypair private.key
+wqsec1(config-ca-trustpoint)# ignore-ipsec-keyusage
+wqsec1(config-ca-trustpoint)# exit
+
+wqsec1(config)# crypto ca authenticate CA
+
+wqsec1(config)# crypto ca enroll CA
+% Include the device serial number in the subject name? [yes/no]: no            
+Display Certificate Request to terminal? [yes/no]: yes                          
+Redisplay enrollment request? [yes/no]: no
+
+wqsec1(config)# crypto ca import CA certificate 
+
+wqsec1(config)# access-list VPN extended permit ip any any
+
+wqsec1(config)# crypto isakmp policy 10
+wqsec1(config-isakmp-policy)# authentication rsa-sig 
+wqsec1(config-isakmp-policy)# encryption aes-256 
+wqsec1(config-isakmp-policy)# hash sha 
+wqsec1(config-isakmp-policy)# group 2
+wqsec1(config-isakmp-policy)# lifetime 86400
+wqsec1(config-isakmp-policy)# exit
+
+wqsec1(config)# crypto isakmp enable outside
+
+wqsec1(config)# crypto ipsec transform-set VPN esp-aes-256 esp-sha-hmac 
+
+wqsec1(config)# crypto map VPN 10 match address VPN
+wqsec1(config)# crypto map VPN 10 set transform-set VPN
+wqsec1(config)# crypto map VPN 10 set peer 91.16.63.114
+wqsec1(config)# crypto map VPN 10 set trustpoint CA
+wqsec1(config)# crypto map VPN interface outside
+
+wqsec1(config)# tunnel-group 91.16.63.114 type ipsec-l2l                        
+wqsec1(config)# tunnel-group 91.16.63.114 ipsec-attributes 
+wqsec1(config-tunnel-ipsec)# trust-point CA
+wqsec1(config-tunnel-ipsec)# peer-id-validate cert
+
+wqsec1# show crypto ca certificates
+wqsec1# show crypto isakmp sa detail
+wqsec1# show crypto ipsec sa

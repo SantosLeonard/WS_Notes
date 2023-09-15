@@ -1,0 +1,10 @@
+## No NAT, the deny entries runs no translations
+
+ip access-list extended INTERNET
+  deny ip 192.168.1.0 0.0.0.255 192.168.28.0 0.0.0.255
+  permit ip 192.168.1.0 0.0.0.255 any
+
+route-map INTERNET
+  match ip address INTERNET
+
+ip nat inside source route-map INTERNET interface FasEthernet0 overload

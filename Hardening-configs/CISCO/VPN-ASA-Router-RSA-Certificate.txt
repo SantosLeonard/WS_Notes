@@ -1,0 +1,118 @@
+ASA
+
+object network OUTSIDE
+ subnet 10.100.2.0 255.255.255.252
+
+object network INSIDE
+ subnet 10.100.1.0 255.255.255.252
+
+#PRESTAR ATENÇÃO NO DESTINATION
+access-list ACL-VPN extended permit ip object INSIDE object OUTSIDE
+
+###DESTINO É O MESMO DA ACL DA VPN
+nat (inside,any) source static REDES REDES destination static OUTSIDE OUTSIDE no-proxy-arp route-lookup
+
+route outside 0.0.0.0 0.0.0.0 1.1.1.2 1
+
+crypto ipsec ikev2 ipsec-proposal PROP
+ protocol esp encryption aes-256
+ protocol esp integrity sha-1
+
+crypto ikev2 policy 10
+ encryption aes-256
+ integrity sha512
+ group 5
+ prf sha
+ lifetime seconds 86400
+crypto ikev2 enable branch
+
+TRUSTPOINT AND CERTIFICATE
+------------------------------------------
+crypto key generate rsa label private.key modulus 2048
+
+crypto ca trustpoint CA
+ enrollment terminal
+ fqdn HQASA.ecorp.local
+ subject-name C=BR,ST=WS2021,CN=HQASA.ecorp.local,O=ECORP
+ keypair private.key
+ ignore-ipsec-keyusage
+
+crypto pki authentication CA
+-> Jogar a CA intermediaria
+
+crypto pki enroll CA
+-> Pegar request e assinar no linux (CA intermediaria)
+
+crypto pki import CA certificate 
+-> Jogar a CA assinada pela CA intermediaria
+------------------------------------------
+
+crypto map VPN 10 match address VPN
+crypto map VPN 10 set pfs group5			<-- necessário pro ASA
+crypto map VPN 10 set peer 130.18.30.2
+crypto map VPN 10 set ikev2 ipsec-proposal PROP
+crypto map VPN 10 set trustpoint CA chain
+crypto map VPN interface branch
+	
+group-policy 130.18.30.2 internal
+group-policy 130.18.30.2 attributes
+ vpn-tunnel-protocol ikev2
+
+tunnel-group 130.18.30.2 type ipsec-l2l
+tunnel-group 130.18.30.2 ipsec-attributes
+ peer-id-validate nocheck
+ ikev2 remote-authentication certificate
+ ikev2 local-authentication certificate CA
+
+
+
+
+ROUTER
+
+crypto key generate rsa label private.key modulus 1024
+
+crypto pki trustpoint CA
+ enrollment terminal
+ fqdn BORT.ecorp.local
+ subject-name C=BR,ST=WS2021,CN=BORT.ecorp.local,O=ECORP
+ revocation-check none
+ rsakeypair private.key
+
+crypto pki authentication CA
+-> Jogar a CA intermediaria
+
+crypto pki enroll CA
+-> Pegar request e assinar no linux (CA intermediaria)
+
+crypto pki import CA certificate 
+-> Jogar a CA assinada pela CA intermediaria
+
+crypto ikev2 proposal IKEv2_PROPOSAL
+ encryption aes-cbc-256
+ prf sha1
+ integrity sha512
+ group 5
+
+crypto ikev2 policy IKEv2_POLICY
+ match fvrf any
+ proposal IKEv2_PROPOSAL
+
+crypto ikev2 profile IKEv2_PROFILE
+ match fvrf any
+ match identity remote any
+ identity local address 130.18.30.2
+ authentication remote rsa-sig
+ authentication local rsa-sig
+ pki trustpoint CA
+
+crypto ipsec transform-set IPSEC esp-aes 256 esp-sha-hmac
+ mode tunnel
+
+crypto map IKEv2_MAP 100 ipsec-isakmp
+ set peer 130.18.30.1
+ set transform-set IPSEC
+ set ikev2-profile IKEv2_PROFILE
+ match address VPN
+
+
+no crypto ikev2 http-url cert

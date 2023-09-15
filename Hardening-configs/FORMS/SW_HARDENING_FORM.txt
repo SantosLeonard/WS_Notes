@@ -1,0 +1,39 @@
+------------------------------------------------------------------------------
+Se o usuário esquecer sua sessão aberta após o uso do
+equipamento, alguém mal intencionado poderá realizar qualquer
+atividade no equipamento.
+
+TIMEOUT - configurar tempo limite de ociosidade do terminal para
+que a sessão se encerre automaticamente.
+config# line con 0
+config-line# exec-timeout 5
+------------------------------------------------------------------------------
+DHCP SPOOFING - O atacante responde as requisições de DHCP e lista a si mesmo como gateway ou servidor DNS, iniciando um ataque main-in-the-middle.
+
+DHCP SNOOPING - apenas o servidor DHCP configurado como
+confiável pode distribuir IP na rede.
+config# ip dhcp snooping
+config# interface e0/2
+config-if# ip dhcp snooping trust
+------------------------------------------------------------------------------
+Vazamento de Senhas
+Senhas salvas em texto claro na running config, facilitando vazamento de senhas.
+
+ENCRYPTION - encriptar todas as senhas, para que sejam
+apresentadas em forma criptografada, impossibilitando sua leitura.
+config# service password-encryption
+------------------------------------------------------------------------------
+POISONING ARP CACHES - O atacante envia gratuitous ARP ao gateway, informando que seu endereço MAC deve ser associado ao endereço IP de seu alvo. Depois que o gateway transmite suas alterações para a rede, o tráfego do alvo passa pelo atacante, permitindo inspeção e modificação do tráfego.
+
+IP ARP INSPECTION - ARP inspecionado e comparado com a database do DHCP Snooping, se não estiver presente o pacote é discartado.
+config# ip arp inspection vlan 1,10,20
+config# interface e1/0
+config-if# ip arp inspection trust
+------------------------------------------------------------------------------
+IP SPOOFING - O atacante é capaz de falsificar dados e se passar por algum usuário legítimo, conseguindo acesso de forma ilegítima.
+Geralmente este ataque resulta em um ataque DDoS contra um dispositivo ou a infraestrutura toda.
+
+IP SOURCE GUARD - utiliza uma tabela com registros de endereços de rede para comparar os pacotes legítimos e descatar pacotes ilegítimos.
+config# int range e0/0-3,e1/0
+config-if# ip verify source
+------------------------------------------------------------------------------

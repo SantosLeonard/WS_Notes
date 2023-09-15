@@ -1,0 +1,25 @@
+TRUSTOPOINTORO
+
+crypto ca trustpoint ANY
+ enrollment protocol scep url http://192.168.2.10:80/certsrv/mscep/mscep.dll
+ fqdn HQASA.ecorp.local
+ subject-name C=BR,ST=WS2021,O=ECORP,CN=HQASA.ecorp.local
+ password *
+ keypair private.key
+ ignore-ipsec-keyusage
+
+ssl trust-point <trustpoint> outside
+
+crypto ca authenticate ANY
+crypto ca enroll ANY
+
+tunnel-group anyconnect general-attributes
+ username-from-certificate CN
+ authentication-server-group radius 
+
+tunnel-group anyconnect webvpn-attributes
+ authentication certificate aaa
+ pre-fill-username client hide
+
+group-policy
+ group-lock value <tunnel with certificate configs>

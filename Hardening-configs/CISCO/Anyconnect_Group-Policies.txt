@@ -1,0 +1,78 @@
+#Create a ‘Pool’ of IP addresses for the remote clients;
+ 
+ip local pool POOL-ANYCONNECT-SN 192.168.249.1-192.168.249.254 mask 255.255.255.0
+
+
+#Create some ‘Objects’ one for the Pool you created above, one for the server(s) 
+that everyone can access, and one for the server(s) only restricted users can access;
+
+object network OBJ-ANYCONNECT-SN
+  subnet 192.168.249.0 255.255.255.0
+
+
+# description Servers than can be accessed by VPN-USER-ACCESS AD Group
+
+object-group network OBJ-USER-ACCESS-SERVERS
+ network-object host 192.168.110.10
+
+
+# description Servers than can only be accessed by VPN-RESTRICTED-ACCESS AD Group
+
+object-group network OBJ-RESTRICTED-ACCESS-SERVERS
+ network-object host 192.168.110.19
+
+
+#Enable Webvpn and AnyConnect;
+
+webvpn
+  enable outside
+  tunnel-group-list enable
+  anyconnect image disk0:/anyconnect-win-4.6.00362-webdeploy-k9.pkg 1
+  anyconnect enable
+
+
+#Create the ACLs for your TWO AD user groups;
+
+access-list ACL-VPN-USER-ACCESS-SERVERS extended permit ip object-group OBJ-USER-ACCESS-SERVERS object OBJ-USER-ACCESS-SERVERS
+
+access-list ACL-VPN-RESTRICTED-ACCESS-SERVERS permit ip object-group OBJ-USER-ACCESS-SERVERS object OBJ-USER-ACCESS-SERVERS
+
+access-list ACL-VPN-RESTRICTED-ACCESS-SERVERS permit ip object-group OBJ-RESTRICTED-ACCESS-SERVERS object OBJ-USER-ACCESS-SERVERS
+
+
+
+#Stop NAT being performed on the remote AnyConnect traffic;
+
+nat (inside,outside) 1 source static any any destination static OBJ-ANYCONNECT-SN OBJ-ANYCONNECT-SN no-proxy-arp route-lookup
+
+
+
+#Each Group-Policy (below) wont have its own tunnel-group so you need to enable RADIUS 
+on the default web tunnel-group, and assign the IP Pool you created (above).
+
+tunnel-group DefaultWEBVPNGroup general-attributes 
+ authentication-server-group PNL-RADIUS LOCAL
+ address-pool POOL-ANYCONNECT-SN
+
+
+
+#Finally, create a group-policy that the NAP server will tell the ASA to allocate to the 
+users of the AD Groups (VPN-USER-ACCESS, and VPN-RESTRICTED-USER-ACCESS);
+
+group-policy GP-USER-ACCESS-SERVERS internal
+group-policy GP-USER-ACCESS-SERVERS attributes
+ dns-server value 192.168.110.10
+ vpn-idle-timeout 30
+ vpn-tunnel-protocol ssl-client
+ split-tunnel-policy tunnelspecified
+ split-tunnel-network-list value ACL-VPN-USER-ACCESS-SERVERS
+ default-domain value test.net
+
+group-policy GP-RESTRICTED-ACCESS-SERVERS internal
+group-policy GP-RESTRICTED-ACCESS-SERVERS attributes
+ dns-server value 192.168.110.10
+ vpn-idle-timeout 30
+ vpn-tunnel-protocol ssl-client
+ split-tunnel-policy tunnelspecified
+ split-tunnel-network-list value ACL-VPN-RESTRICTED-ACCESS-SERVERS
+ default-domain value test.net

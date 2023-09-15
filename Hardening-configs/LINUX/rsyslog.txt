@@ -1,0 +1,38 @@
+/etc/rsyslog.conf
+- Descomentar para usar UDP
+-- $ModLoad imudp 
+-- $UDPServerRun 514
+
+- Descomentar para usar TCP
+-- $ModLoad imtcp 
+-- $InputTCPServerRun 514 
+
+
+facility
+16 = Local0 on rsyslog
+17 = Local1 on rsyslog
+18 = Local2 on rsyslog
+19 = Local3 on rsyslog
+20 = Local4 on rsyslog
+21 = Local5 on rsyslog
+22 = Local6 on rsyslog
+23 = Local7 on rsyslog
+
+
+- Template por IP Address sem filtro
+-- $template DynamicFile,"/var/log/%HOSTNAME%/%rsyslogfacility-text%.log"
+-- *.*	-?DynamicFile
+
+-- $template FromIp,"/var/log/%FROMHOST-IP%.log"
+-- *.*	?FromIp
+
+-- semanage -a -t syslogd_port_t -p udp 514
+-- semanage -a -t syslogd_port_t -p tcp 514 
+
+
+local6.*	<log_file>
+
+
+-- firewall-cmd --permanent --add-port=514/tcp
+-- firewall-cmd --permanent --add-port=514/udp
+-- firewall-cmd –reload
